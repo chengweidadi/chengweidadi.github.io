@@ -3,25 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我爱你</title>
+    <title>贪吃蛇小游戏</title>
     <style>
-        /* 全局样式 */
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #000; /* 纯黑背景 */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* 设置满屏高度 */
-            color: #fff; /* 白色文字 */
-            font-size: 10vw; /* 根据屏幕大小调整文字大小 */
-            font-weight: bold;
+            height: 100vh;
+            background-color: #000;
+            margin: 0;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+
+        #gameCanvas {
+            border: 2px solid #fff;
+            background-color: #333;
+        }
+
+        #gameInfo {
+            margin-top: 10px;
             text-align: center;
         }
     </style>
 </head>
 <body>
-    我爱你
+    <h1>贪吃蛇小游戏</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="gameInfo">用箭头键控制蛇，尽量吃到更多的食物！</div>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const box = 20; // Snake and food size
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let direction = 'RIGHT';
+        let food = {
+            x: Math.floor(Math.random() * canvas.width / box) * box,
+            y: Math.floor(Math.random() * canvas.height / box) * box
+        };
+        let score = 0;
+
+        document.addEventListener('keydown', changeDirection);
+
+        function changeDirection(event) {
+            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+            else if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+            else if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+            else if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+        }
+
+        function drawGame() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillStyle = i === 0 ? '#fff' : '#00ff00';
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            }
+
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(food.x, food.y, box, box);
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (direction === 'LEFT') snakeX -= box;
+            if (direction === 'UP') snakeY -= box;
+            if (direction === 'RIGHT') snakeX += box;
+            if (direction === 'DOWN') snakeY += box;
+
+            if (snakeX === food.x && snakeY === food.y) {
+                score++;
+                food = {
+                    x: Math.floor(Math.random() * canvas.width / box) * box,
+                    y: Math.floor(Math.random() * canvas.height / box) * box
+                };
+            } else {
+                snake.pop();
+            }
+
+            const newHead = { x: snakeX, y: snakeY };
+
+            if (
+                snakeX < 0 || snakeY < 0 ||
+                snakeX >= canvas.width || snakeY >= canvas.height ||
+                collision(newHead, snake)
+            ) {
+                clearInterval(game);
+                alert(`游戏结束！您的得分是：${score}`);
+                return;
+            }
+
+            snake.unshift(newHead);
+        }
+
+        function collision(head, body) {
+            for (let i = 0; i < body.length; i++) {
+                if (head.x === body[i].x && head.y === body[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const game = setInterval(drawGame, 100);
+    </script>
 </body>
 </html>
